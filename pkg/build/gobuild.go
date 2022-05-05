@@ -909,6 +909,13 @@ func (g *gobuild) Build(ctx context.Context, s string) (Result, error) {
 		if !ok {
 			return nil, fmt.Errorf("failed to interpret base as image: %v", base)
 		}
+		desc, err := baseImage.Manifest()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get base image manifest: %w", err)
+		}
+		if !g.platformMatcher.matches(desc.Config.Platform) {
+			return nil, errors.New("base image does not match desired platform")
+		}
 		res, err = g.buildOne(ctx, s, baseImage, nil)
 	default:
 		return nil, fmt.Errorf("base image media type: %s", mt)
